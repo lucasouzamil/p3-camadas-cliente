@@ -45,16 +45,15 @@ def main():
         #seus dados a serem transmitidos são um array bytes a serem transmitidos. Gere esta lista com o 
         #nome de txBuffer. Esla sempre irá armazenar os dados a serem enviados.
 
-        comandos = {
-            1: b'\x00\x00\x00\x00', #4 BYTES
-            2: b'\x00\x00\xBB\x00', #4 BYTES
-            3: b'\xBB\x00\x00',    #3 BYTES
-            4: b'\x00\xBB\x00',    #3 BYTES
-            5: b'\x00\x00\xBB',    #3 BYTES
-            6: b'\x00\xAA',       #2 BYTES
-            7: b'\xBB\x00',       #2 BYTES
-            8: b'\x00',          #1 BYTE
-            9: b'\xBB',          #1 BYTE
+        def cria_pacotes(bytearray):
+            qnt_pacote=len(bytearray)//50
+            for i in list(range(0, qnt_pacote)):
+                array=bytearray[i*50:i+1*50]
+
+        datagrama = {
+            'head':,
+            'payload':,
+            'eop':,
         }
 
         overhead = {
