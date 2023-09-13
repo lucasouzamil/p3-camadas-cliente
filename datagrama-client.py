@@ -9,7 +9,7 @@
 #esta é a camada superior, de aplicação do seu software de comunicação serial UART.
 #para acompanhar a execução e identificar erros, construa prints ao longo do código! 
 
-
+from funcao import cria_pacotes
 from enlace import *
 import time
 import numpy as np
@@ -40,97 +40,43 @@ def main():
         #Se chegamos até aqui, a comunicação foi aberta com sucesso. Faça um print para informar.
         print("Abriu a comunicação")
         print('')
-                  
-        #aqui você deverá gerar os dados a serem transmitidos. 
-        #seus dados a serem transmitidos são um array bytes a serem transmitidos. Gere esta lista com o 
-        #nome de txBuffer. Esla sempre irá armazenar os dados a serem enviados.
 
-        def cria_pacotes(bytearray):
-            qnt_pacote=len(bytearray)//50
-            for i in list(range(0, qnt_pacote)):
-                array=bytearray[i*50:i+1*50]
-
-        datagrama = {
-            'head':,
-            'payload':,
-            'eop':,
-        }
-
-        overhead = {
-            'proximocomando':b'\xFF',
-        }
-
-        qntd_comandos_enviados = random.randint(10,30)
-        txBuffer = b''
-        for n in range(qntd_comandos_enviados):
-            ncomando = random.randint(1,9)
-            txBuffer += comandos[ncomando]+overhead['proximocomando']
-            print(comandos[ncomando])
-
-               
-        print('')
-        print("------------------------------")
-        print('Comçando transmissão de dados:')
-        print("------------------------------")
-        print('\n')
-        print(f"Eviando {qntd_comandos_enviados} comandos")
+        #Endereco da imagem a ser transmitida
+        imageR = open("img/helloworld.jpg",'rb').read()
+        #print(imageR)
+        # Carrega imagem
+        print("Carregando imagem para transmissão:")
+        print(f" - {imageR}")
+        print("-"*35)
+        #txBuffer = imagem em bytes!
+        pacotes = cria_pacotes(b'\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef')
         
+        print('Enviando byte de sacrificio')
         com1.sendData(np.asarray(b'x00'))    #enviar byte de lixo
-        time.sleep(.5)
-        com1.sendData(np.asarray(bytes.fromhex(hex(len(txBuffer))[2:])))  #as array apenas como boa pratica para casos de ter uma outra forma de dados
-        time.sleep(.5)
-        com1.sendData(np.asarray(txBuffer))          
-        # A camada enlace possui uma camada inferior, TX possui um método para conhecermos o status da transmissão
-        # O método não deve estar fincionando quando usado como abaixo. deve estar retornando zero. Tente entender como esse método funciona e faça-o funcionar.
-        txSize = com1.tx.getStatus()
-        print('O tamanho da mensagem tem {} bytes' .format(txSize))
-        print('')
-        
-        tempo_inicial = time.time()
-        duracao_maxima = 5  # em segundos
+        time.sleep(.05)
         com1.rx.clearBuffer()
+
         print('Esperando byte de sacrificio')
         rxBuffer, nRx = com1.getData(1)
-        com1.rx.clearBuffer()
         time.sleep(.05)
-        recebeu = False
-        while time.time() - tempo_inicial < duracao_maxima:
-            if com1.rx.getBufferLen() > 0:
-                rxBuffer, nRx = com1.getData(1)
-                time.sleep(.05)
-                recebeu = True
-                break
-            print('.')
-            time.sleep(0.1)
+        com1.rx.clearBuffer()
 
-        if recebeu:
-            qntd_comandos_recebidos = int.from_bytes(rxBuffer, byteorder='big')
-            if qntd_comandos_recebidos == qntd_comandos_enviados:
-                print('\n')
-                print('*'*60)
-                print(f"#                         SUCESSO                          #")
-                print(f'# O server recebeu a quantidade de comandos enviados -> {qntd_comandos_recebidos}  #')
-                print('*'*60)
-                print('\n')
-            else:
-                print('\n')
-                print('*'*60)
-                print(f'#                         FALHA                            #')
-                print(f'#         O server recebeu {qntd_comandos_recebidos} mas o cliente enviou {qntd_comandos_enviados}       #')
-                print('*'*60)
-                print('\n')
-        else:
-            print('\n')
-            print('#'*19)
-            print('#      FALHA      #')
-            print("# error: TIME OUT #")
-            print('#'*19)
-            print('\n')
-        
-        # Encerra comunicação
-        print("-------------------------")
-        print("Comunicação encerrada")
-        print("-------------------------")
+        print('Iniciando transmissão de pacotes')
+        i = 0
+        while i < len(pacotes['bytearray']):
+            txBuffer = pacotes['bytearray'][i]
+            print(f'Enviou --->  {txBuffer}')
+            com1.sendData(np.asarray(txBuffer)) 
+            time.sleep(.05)
+
+            rxBuffer, nRx = com1.getData(15)
+            time.sleep(.05)
+            print(rxBuffer)
+            int_list = [int(byte) for byte in rxBuffer]
+            if (int_list[0] == i) and int_list[-3:]==[255,255,255]:
+                i+=1
+            com1.rx.clearBuffer()
+            
         com1.disable()
         
     except Exception as erro:
