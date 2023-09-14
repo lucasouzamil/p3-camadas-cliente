@@ -101,10 +101,11 @@ def main():
                     check = False
                     while not check:
                         rxBuffer, nRx, check = com1.getData_teste(15)
+                        if check == False:
+                            com1.sendData(np.asarray(txBuffer)) 
                         time.sleep(.05)
                         com1.rx.clearBuffer()
-                        print('####')
-                    print(f'Recebu  --->   {rxBuffer}')
+                    print(f'Recebeu  --->   {rxBuffer}')
                     int_list = [int(byte) for byte in rxBuffer]
                     if (int_list[0] == i) and int_list[-3:]==[255]*3:
                         i+=1

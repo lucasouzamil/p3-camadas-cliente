@@ -73,7 +73,7 @@ def main():
         print('Iniciando transminssão de pacotes')
         while (i < len(pacotes['bytearray'])) and transmissao:
             txBuffer = pacotes['bytearray'][i]
-            print(f"Enviou {i}/{len(pacotes['bytearray'])-1} pacotes")
+            print(f"Enviou {i}/{len(pacotes['bytearray'])-1}")
             com1.sendData(np.asarray(txBuffer)) 
             time.sleep(.05)
 
@@ -88,6 +88,7 @@ def main():
                 time.sleep(0.1)
 
             if recebeu == False:
+                print('')
                 print("O servidor não estava pronto para começar a transmissão.")
                 pergunta = input("Deseja iniciar a comunicação novamente? (S/N)")
                 if pergunta.lower() == 's':
@@ -100,12 +101,19 @@ def main():
                 if recebeu == True and cn: 
                     rxBuffer, nRx = com1.getData(15)
                     time.sleep(.05)
-                    print(f'Recebu  --->   {rxBuffer}')
+                    print(f'Recebeu  --->   {[int(x) for x in rxBuffer]}')
                     int_list = [int(byte) for byte in rxBuffer]
                     if (int_list[0] == i) and int_list[-3:]==[255]*3:
                         i+=1
                     com1.rx.clearBuffer()
                 cn=True
+
+        print('')
+        if (i == len(pacotes['bytearray'])):
+            print('Transmissão encerrada com êxito!')
+        else:
+            print('Transmissão encerrada com dados corrompidos!')
+        print('')
 
         com1.disable()
         
