@@ -59,7 +59,7 @@ def main():
         com1.rx.clearBuffer()
 
         print('Esperando byte de sacrificio')
-        rxBuffer, nRx = com1.getData(1)
+        rxBuffer, nRx, check = com1.getData_teste(1)
         time.sleep(.05)
         com1.rx.clearBuffer()
 
@@ -73,13 +73,13 @@ def main():
         print('Iniciando transminssão de pacotes')
         while (i < len(pacotes['bytearray'])) and transmissao:
             txBuffer = pacotes['bytearray'][i]
-            print(f"Enviou {i}/{len(pacotes['bytearray'])-1} pacotes")
+            print(f"Enviou {i}/{len(pacotes['bytearray'])} pacotes")
             com1.sendData(np.asarray(txBuffer)) 
             time.sleep(.05)
 
             while (time.time() - tempo_inicial < duracao_maxima) and i == 0:
                 if com1.rx.getBufferLen() > 0:
-                    rxBuffer, nRx = com1.getData(15)
+                    rxBuffer, nRx, check = com1.getData_teste(15)
                     time.sleep(.05)
                     recebeu = True
                     i += 1
@@ -98,8 +98,12 @@ def main():
 
             if (transmissao == True) and (i > 0):
                 if recebeu == True and cn: 
-                    rxBuffer, nRx = com1.getData(15)
-                    time.sleep(.05)
+                    check = False
+                    while not check:
+                        rxBuffer, nRx, check = com1.getData_teste(15)
+                        time.sleep(.05)
+                        com1.rx.clearBuffer()
+                        print('####')
                     print(f'Recebu  --->   {rxBuffer}')
                     int_list = [int(byte) for byte in rxBuffer]
                     if (int_list[0] == i) and int_list[-3:]==[255]*3:

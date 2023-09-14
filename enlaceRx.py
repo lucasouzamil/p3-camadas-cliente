@@ -71,6 +71,19 @@ class RX(object):
         while(self.getBufferLen() < size):
             time.sleep(0.05)                 
         return(self.getBuffer(size))
+    
+    def getNData_test(self, size):
+        tempo_inicial = time.time()
+        duracao_maxima = 0.5
+        buffer=None
+        while(self.getBufferLen() <= size) and ((time.time() - tempo_inicial) < duracao_maxima):
+            time.sleep(0.05)   
+            buffer = self.getBuffer(size)
+
+        if (buffer is not None) and (len(buffer) == self.getBufferLen()):
+            return buffer, True
+        else:
+            return buffer, False
 
 
     def clearBuffer(self):
